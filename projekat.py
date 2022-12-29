@@ -13,40 +13,29 @@ test_path = './Landscape Classification/Landscape Classification/Testing Data'
 img_size = [64, 64]
 batch_size = 32
 
-ulaz_trening = image_dataset_from_directory(main_path,  subset='training', validation_split=0.2,
+ulaz_trening = image_dataset_from_directory(train_path,  # subset='training', validation_split=0.2,
                                             seed=52, batch_size=batch_size,
                                             image_size=img_size)
 
-ulaz_test = image_dataset_from_directory(main_path, subset='validation', validation_split=0.2, seed=52,
-                                         batch_size=batch_size,
+ulaz_test = image_dataset_from_directory(test_path,  # subset='validation', validation_split=0.2,
+                                         seed=52, batch_size=batch_size,
                                          image_size=img_size)
 
 classes = ulaz_trening.class_names
 
-for img, lab in ulaz_trening.take(1):
-    plt.figure()
-    for k in range(10):
-        plt.subplot(2, 5, k + 1)
-        plt.imshow(img[k].numpy().astype('uint8'))
-        plt.title(classes[lab[k]])
-    plt.show()
+# for img, lab in ulaz_trening.take(1):
+#     plt.figure()
+#     for k in range(10):
+#         plt.subplot(2, 5, k + 1)
+#         plt.imshow(img[k].numpy().astype('uint8'))
+#         plt.title(classes[lab[k]])
+#     plt.show()
 
 data_aug = Sequential([
     layers.RandomFlip('horizontal', input_shape=(img_size[0], img_size[1], 3)),
     layers.RandomRotation(0.0625),
     layers.RandomZoom(0.3)
 ])
-
-# data_aug.build()
-
-for img, lab in ulaz_trening.take(1):
-    plt.figure()
-    for k in range(10):
-        img_aug = data_aug(img)
-        plt.subplot(2, 5, k + 1)
-        plt.imshow(img_aug[0].numpy().astype('uint8'))
-        plt.title(classes[lab[k]])
-    plt.show()
 
 model = Sequential([
     data_aug,
@@ -65,7 +54,7 @@ model = Sequential([
 
     layers.Dropout(0.4),
 
-    layers.Flatten(), # da ispravi sliku u niz
+    layers.Flatten(),  # da ispravi sliku u niz
 
     layers.Dense(256, activation='relu'),
     layers.Dense(len(classes), 'softmax')
@@ -74,7 +63,7 @@ model = Sequential([
 model.summary()
 
 model.compile('adam', loss=SparseCategoricalCrossentropy(), metrics='accuracy')
-history = model.fit(ulaz_trening, epochs=10, validation_data=ulaz_test) # ne mora batch_size jer je definisan vec gore
+history = model.fit(ulaz_trening, epochs=20, validation_data=ulaz_test)  # ne mora batch_size jer je definisan vec gore
 
 plt.figure()
 plt.subplot(1, 2, 1)
